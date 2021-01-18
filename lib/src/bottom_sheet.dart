@@ -47,6 +47,7 @@ class ModalBottomSheet extends StatefulWidget {
     this.shouldClose,
     this.scrollController,
     this.expanded,
+    this.minFlingVelocity,
     @required this.onClosing,
     @required this.child,
   })  : assert(enableDrag != null),
@@ -74,6 +75,9 @@ class ModalBottomSheet extends StatefulWidget {
   /// but then bounce the content back to the edge of
   /// the top bound.
   final bool bounce;
+
+  /// The min velocity to trigger fling
+  final double minFlingVelocity;
 
   // Force the widget to fill the maximum size of the viewport
   // or if false it will fit to the content of the widget
@@ -220,6 +224,8 @@ class _ModalBottomSheetState extends State<ModalBottomSheet>
   void _handleDragEnd(double velocity) async {
     assert(widget.enableDrag, 'Dragging is disabled');
 
+    print('_handleDragEnd: $velocity');
+
     animationCurve = BottomSheetSuspendedCurve(
       widget.animationController.value,
       curve: _defaultCurve,
@@ -236,8 +242,9 @@ class _ModalBottomSheetState extends State<ModalBottomSheet>
       canClose = await shouldClose();
     }
     if (canClose) {
-      // If speed is bigger than _minFlingVelocity try to close it
-      if (velocity > _minFlingVelocity) {
+      final minFlingVelocity = widget.minFlingVelocity ?? _minFlingVelocity;
+      // If speed is bigger than minFlingVelocity try to close it
+      if (velocity > minFlingVelocity) {
         _close();
       } else if (hasReachedCloseThreshold) {
         if (widget.animationController.value > 0.0) {

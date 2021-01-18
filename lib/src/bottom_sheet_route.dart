@@ -19,11 +19,13 @@ class _ModalBottomSheet<T> extends StatefulWidget {
     this.expanded = false,
     this.enableDrag = true,
     this.animationCurve,
+    this.minFlingVelocity,
   })  : assert(expanded != null),
         assert(enableDrag != null),
         super(key: key);
 
   final double closeProgressThreshold;
+  final double minFlingVelocity;
   final ModalBottomSheetRoute<T> route;
   final bool expanded;
   final bool bounce;
@@ -112,6 +114,8 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
                 bounce: widget.bounce,
                 scrollController: scrollController,
                 animationCurve: widget.animationCurve,
+                closeProgressThreshold: widget.closeProgressThreshold,
+                minFlingVelocity: widget.minFlingVelocity,
               ),
             );
           },
@@ -125,6 +129,7 @@ class _ModalBottomSheetState<T> extends State<_ModalBottomSheet<T>> {
 class ModalBottomSheetRoute<T> extends PopupRoute<T> {
   ModalBottomSheetRoute({
     this.closeProgressThreshold,
+    this.minFlingVelocity,
     this.containerBuilder,
     this.builder,
     this.scrollController,
@@ -144,6 +149,7 @@ class ModalBottomSheetRoute<T> extends PopupRoute<T> {
         super(settings: settings);
 
   final double closeProgressThreshold;
+  final double minFlingVelocity;
   final WidgetWithChildBuilder containerBuilder;
   final WidgetBuilder builder;
   final bool expanded;
@@ -200,6 +206,7 @@ class ModalBottomSheetRoute<T> extends PopupRoute<T> {
         bounce: bounce,
         enableDrag: enableDrag,
         animationCurve: animationCurve,
+        minFlingVelocity: minFlingVelocity,
       ),
     );
     return bottomSheet;
