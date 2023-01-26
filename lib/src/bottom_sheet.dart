@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
-import 'package:modal_bottom_sheet/src/utils/scroll_to_top_status_bar.dart';
-
 import 'package:modal_bottom_sheet/src/utils/bottom_sheet_suspended_curve.dart';
+import 'package:modal_bottom_sheet/src/utils/scroll_to_top_status_bar.dart';
 
 const Curve _decelerateEasing = Cubic(0.0, 0.0, 0.2, 1.0);
 const Curve _modalBottomSheetCurve = _decelerateEasing;
@@ -48,6 +48,7 @@ class ModalBottomSheet extends StatefulWidget {
     required this.scrollController,
     required this.expanded,
     required this.onClosing,
+    required this.minFlingVelocity,
     required this.child,
   })  : assert(enableDrag != null),
         assert(onClosing != null),
@@ -74,6 +75,9 @@ class ModalBottomSheet extends StatefulWidget {
   /// but then bounce the content back to the edge of
   /// the top bound.
   final bool bounce;
+
+  /// The min velocity to trigger fling
+  final double? minFlingVelocity;
 
   // Force the widget to fill the maximum size of the viewport
   // or if false it will fit to the content of the widget
@@ -221,6 +225,8 @@ class _ModalBottomSheetState extends State<ModalBottomSheet>
   void _handleDragEnd(double velocity) async {
     assert(widget.enableDrag, 'Dragging is disabled');
 
+    print('_handleDragEnd: $velocity');
+
     animationCurve = BottomSheetSuspendedCurve(
       widget.animationController.value,
       curve: _defaultCurve,
@@ -237,8 +243,9 @@ class _ModalBottomSheetState extends State<ModalBottomSheet>
       canClose = await shouldClose();
     }
     if (canClose) {
-      // If speed is bigger than _minFlingVelocity try to close it
-      if (velocity > _minFlingVelocity) {
+      final minFlingVelocity = widget.minFlingVelocity ?? _minFlingVelocity;
+      // If speed is bigger than minFlingVelocity try to close it
+      if (velocity > minFlingVelocity) {
         _close();
       } else if (hasReachedCloseThreshold) {
         if (widget.animationController.value > 0.0) {
@@ -298,9 +305,8 @@ class _ModalBottomSheetState extends State<ModalBottomSheet>
 
       // Otherwise the calculate the velocity with a VelocityTracker
       if (_velocityTracker == null) {
-        //final pointerKind = defaultPointerDeviceKind(context);
-        // ignore: deprecated_member_use
-        _velocityTracker = VelocityTracker.withKind(PointerDeviceKind.touch);
+        final pointerKind = defaultPointerDeviceKind(context);
+        _velocityTracker = VelocityTracker.withKind(pointerKind);
         _startTime = DateTime.now();
       }
 
